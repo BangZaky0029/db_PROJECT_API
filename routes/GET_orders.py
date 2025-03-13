@@ -40,8 +40,56 @@ reference_data = {
         {"ID": 1401, "nama": "tita"},
         {"ID": 1402, "nama": "ina"},
         {"ID": 1403, "nama": "lilis"}
+    ],
+    "table_type_produk": [
+        {"id_type": 45001, "kategori": "RS"},
+        {"id_type": 45002, "kategori": "Non-RS"}
+    ],
+    "table_produk": [
+        {"id_produk": 47001, "nama_produk": "MNK-Large", "id_bahan": 46001},
+        {"id_produk": 47002, "nama_produk": "MNK-Medium", "id_bahan": 46001},
+        {"id_produk": 47003, "nama_produk": "MNK-Small", "id_bahan": 46001},
+        {"id_produk": 47004, "nama_produk": "MNK-Mini", "id_bahan": 46001},
+        {"id_produk": 47005, "nama_produk": "MNK-Middle", "id_bahan": 46001},
+        {"id_produk": 47006, "nama_produk": "Travel Bag", "id_bahan": 46001},
+        {"id_produk": 47007, "nama_produk": "ToteBag Large", "id_bahan": 46001},
+        {"id_produk": 47008, "nama_produk": "Kawai", "id_bahan": 46001},
+        {"id_produk": 47009, "nama_produk": "Mini Sling", "id_bahan": 46001},
+        {"id_produk": 47010, "nama_produk": "Medium Sling", "id_bahan": 46001},
+        {"id_produk": 47011, "nama_produk": "Gym Bag", "id_bahan": 46001},
+        {"id_produk": 47012, "nama_produk": "Darla", "id_bahan": 46001},
+        {"id_produk": 47013, "nama_produk": "Bolster", "id_bahan": 46001},
+        {"id_produk": 47014, "nama_produk": "Indie Bag", "id_bahan": 46001},
+        {"id_produk": 47015, "nama_produk": "Mobile Bag", "id_bahan": 46001},
+        {"id_produk": 47016, "nama_produk": "Dompet type-1", "id_bahan": 46002},
+        {"id_produk": 47017, "nama_produk": "Card Holder", "id_bahan": 46002},
+        {"id_produk": 47018, "nama_produk": "Lanyard", "id_bahan": 46002},
+        {"id_produk": 47019, "nama_produk": "Anna Karenina", "id_bahan": 46002},
+        {"id_produk": 47020, "nama_produk": "Lily Bag", "id_bahan": 46002},
+        {"id_produk": 47021, "nama_produk": "Puffy Laptop Zipper", "id_bahan": 46003},
+        {"id_produk": 47022, "nama_produk": "Puffy Laptop Handle", "id_bahan": 46003},
+        {"id_produk": 47023, "nama_produk": "Puffy Laptop HandZip", "id_bahan": 46003},
+        {"id_produk": 47024, "nama_produk": "Puffy Kanaya", "id_bahan": 46003},
+        {"id_produk": 47025, "nama_produk": "Puffy Karissa", "id_bahan": 46003},
+        {"id_produk": 47026, "nama_produk": "Puffy Kalandra", "id_bahan": 46003},
+        {"id_produk": 47027, "nama_produk": "Puffy Kalia", "id_bahan": 46003},
+        {"id_produk": 47028, "nama_produk": "Puffy Table", "id_bahan": 46003},
+        {"id_produk": 47029, "nama_produk": "Puffy Loly Bag", "id_bahan": 46003},
+        {"id_produk": 47030, "nama_produk": "Puffy Adel Rantai", "id_bahan": 46003},
+        {"id_produk": 47031, "nama_produk": "Marsoto", "id_bahan": 46004}
+    ],
+    "table_bahan": [
+        {"id_bahan": 46001, "bahan": "Kanvas"},
+        {"id_bahan": 46002, "bahan": "Kulit"},
+        {"id_bahan": 46003, "bahan": "Nilon"},
+        {"id_bahan": 46004, "bahan": "Marsoto"}
     ]
 }
+
+# GET: Ambil Data reference 
+@orders_bp.route("/api/references", methods=["GET"])
+def get_references():
+    return jsonify(reference_data)
 
 
 @orders_bp.route('/api/get-layout', methods=['GET'])
@@ -72,11 +120,6 @@ def get_layout():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-# GET: Ambil Data reference 
-@orders_bp.route("/api/references", methods=["GET"])
-def get_references():
-    return jsonify(reference_data)
 
 # GET : Mengurutkan data berdasarkan deadline terdekat 
 @orders_bp.route('/api/get_sorted_orders', methods=['GET'])
