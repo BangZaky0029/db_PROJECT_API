@@ -241,13 +241,20 @@ def get_orders():
             conn.close()
 
 # GET: Ambil semua data Inputable
+# GET: Ambil semua data Inputable tanpa field 'link'
 @orders_bp.route('/api/get-input-table', methods=['GET'])
 def get_inputOrder():
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM table_input_order")
+        
+        # Mengambil semua data kecuali field 'link'
+        cursor.execute("""
+            SELECT id_input, TimeTemp, id_pesanan, id_admin, Platform, qty, nama_ket, Deadline 
+            FROM table_input_order
+        """)
         orders = cursor.fetchall()
+        
         return jsonify({'status': 'success', 'data': orders}), 200
     except Error as e:
         logger.error(f"Error getting input table: {str(e)}")
@@ -256,6 +263,7 @@ def get_inputOrder():
         if conn.is_connected(): 
             cursor.close()
             conn.close()
+
 
 # Function to sync a single record from table_input_order to table_pesanan
 def sync_to_pesanan(cursor, id_input):
