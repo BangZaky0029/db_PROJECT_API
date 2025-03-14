@@ -1,8 +1,10 @@
+import os
 from flask import Flask, Blueprint, jsonify, request
 from flask_cors import CORS
 from mysql.connector import Error, InterfaceError
 from project_api.db import get_db_connection
 import datetime
+from werkzeug.utils import secure_filename
 import logging
 
 # Configure logging
@@ -16,6 +18,40 @@ CORS(app, resources={r"/api/*": {"origins": ["http://127.0.0.1:5501", "http://lo
 post_input_order_bp = Blueprint("input_order", __name__)
 CORS(post_input_order_bp)
 
+# Configure file upload settings
+UPLOAD_FOLDER = r"C:\KODINGAN\db_manukashop\images"
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+# Base URL for accessing the images - configure this to match your server setup
+IMAGE_BASE_URL = "http://100.117.80.112:5000/images"
+
+# Create upload folder if it doesn't exist
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+# Add upload folder configuration to app
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Helper function to check allowed file extensions
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Helper function for CORS preflight
+def _handle_cors_preflight():
+    response = jsonify({"status": "success"})
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
+    response.headers.add("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
+    return response
+
+# Add a route to serve images
+# Route untuk serve image
+@post_input_order_bp.route('/images/<filename>')
+def serve_image(filename):
+    try:
+       return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    except FileNotFoundError:
+        return "File not found", 404
+
 @post_input_order_bp.route("/api/input-order", methods=["OPTIONS", "POST"])
 def input_order():
     if request.method == "OPTIONS":
@@ -23,18 +59,27 @@ def input_order():
 
     conn, cursor = None, None
     try:
-        # Validasi request JSON
-        data = request.get_json()
-        if not data:
-            return jsonify({"status": "error", "message": "Request body harus berupa JSON"}), 400
+        # Check if request has form data or JSON
+        if request.content_type and 'multipart/form-data' in request.content_type:
+            # Handle form data with file upload
+            data = request.form.to_dict()
+            file = None
+            if 'photo' in request.files:
+                file = request.files['photo']
+        else:
+            # Handle JSON data (backward compatibility)
+            data = request.get_json()
+            if not data:
+                return jsonify({"status": "error", "message": "Request body harus berupa JSON atau form data"}), 400
+            file = None
 
-        # Pastikan semua field wajib ada
+        # Validate required fields
         required_fields = ["id_pesanan", "id_admin", "Platform", "qty", "Deadline", "id_produk", "id_type"]
         missing_fields = [field for field in required_fields if field not in data or not str(data[field]).strip()]
         if missing_fields:
             return jsonify({"status": "error", "message": f"Field berikut wajib diisi: {', '.join(missing_fields)}"}), 400
 
-        # Ambil data
+        # Get data from request
         id_pesanan = data["id_pesanan"].strip()
         id_admin = data["id_admin"].strip()
         platform = data["Platform"].strip()
@@ -43,21 +88,42 @@ def input_order():
         id_produk = int(data["id_produk"])
         id_type = int(data["id_type"])
         nama_ket = data.get("nama_ket", "").strip()
-        link = data.get("link", "").strip()
         id_designer = data.get("id_designer") or None
         id_penjahit = data.get("id_penjahit") or None
         id_qc = data.get("id_qc") or None
 
+        # Handle file upload
+        link = data.get("link", "").strip()
+        if file and file.filename != '':
+            if allowed_file(file.filename):
+                # Generate unique filename with timestamp to avoid conflicts
+                timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                filename = secure_filename(f"{timestamp}_{file.filename}")
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                
+                # Save file
+                file.save(filepath)
+                logger.info(f"File saved successfully: {filepath}")
+                
+                # Convert local path to web URL
+                link = f"{IMAGE_BASE_URL}/{filename}"
+                logger.info(f"Converted path to URL: {link}")
+            else:
+                return jsonify({
+                    "status": "error", 
+                    "message": f"Format file tidak didukung. Format yang diizinkan: {', '.join(ALLOWED_EXTENSIONS)}"
+                }), 400
+
         # Log data for debugging
         logger.info(f"Processing order with id_pesanan: {id_pesanan}, id_produk: {id_produk}")
 
-        # Waktu sekarang
+        # Get current time
         now = datetime.datetime.now()
         bulan = now.strftime("%m")
         tahun = now.strftime("%y")
         current_timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
 
-        # Koneksi ke database
+        # Connect to database
         conn = get_db_connection()
         if conn is None:
             return jsonify({"status": "error", "message": "Gagal terhubung ke database"}), 500
@@ -73,7 +139,7 @@ def input_order():
                 "message": f"ID Produk {id_produk} tidak ditemukan dalam database"
             }), 400
 
-        # Generate unique ID dengan handling jika NULL
+        # Generate unique ID with NULL handling
         cursor.execute("SELECT id_input FROM table_input_order WHERE id_input LIKE %s ORDER BY id_input DESC LIMIT 1", (f"{bulan}{tahun}-%",))
         last_id = cursor.fetchone()
         
@@ -85,10 +151,10 @@ def input_order():
         id_input = f"{bulan}{tahun}-{str(last_num).zfill(5)}"
         logger.info(f"Generated id_input: {id_input}")
 
-        # Mulai transaksi
+        # Begin transaction
         conn.start_transaction()
 
-        # INSERT ke table_input_order with detailed error handling
+        # INSERT into table_input_order
         try:
             cursor.execute(
                 """
@@ -104,7 +170,7 @@ def input_order():
             conn.rollback()
             return jsonify({"status": "error", "message": f"Error inserting into table_input_order: {str(e)}"}), 500
 
-        # INSERT ke table_pesanan
+        # INSERT into table_pesanan
         try:
             cursor.execute(
                 """
@@ -128,8 +194,7 @@ def input_order():
             conn.rollback()
             return jsonify({"status": "error", "message": f"Error inserting into table_pesanan: {str(e)}"}), 500
 
-
-        # INSERT ke table_prod
+        # INSERT into table_prod
         try:
             cursor.execute(
                 """
@@ -145,8 +210,7 @@ def input_order():
             conn.rollback()
             return jsonify({"status": "error", "message": f"Error inserting into table_prod: {str(e)}"}), 500
 
-
-        # INSERT ke table_design
+        # INSERT into table_design
         try:
             cursor.execute(
                 """
@@ -162,8 +226,7 @@ def input_order():
             conn.rollback()
             return jsonify({"status": "error", "message": f"Error inserting into table_design: {str(e)}"}), 500
 
-
-        # Jika deadline = NOW(), masukkan juga ke table_urgent
+        # Check if deadline is today, insert into table_urgent
         try:
             cursor.execute("SELECT CURDATE()")
             current_date = cursor.fetchone()['CURDATE()']
@@ -183,7 +246,7 @@ def input_order():
             conn.rollback()
             return jsonify({"status": "error", "message": f"Error handling table_urgent: {str(e)}"}), 500
 
-        # Commit transaksi
+        # Commit transaction
         conn.commit()
         logger.info(f"Successfully committed transaction for order {id_pesanan}")
 
@@ -227,6 +290,12 @@ def input_order():
             conn.close()
         logger.info("Connection and cursor closed")
 
+# Don't forget to import send_from_directory at the top of your file
+from flask import send_from_directory
+
+
+
+
 # Register blueprint
 app.register_blueprint(post_input_order_bp)
 
@@ -241,3 +310,56 @@ def _handle_cors_preflight():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+
+
+# # Folder penyimpanan foto
+# UPLOAD_FOLDER = r"D:\KODINGAN\BELAJAR KODING\WebKoding\MNK-DASHBOARD\db_mnk\images"
+
+# # Buat folder jika belum ada
+# if not os.path.exists(UPLOAD_FOLDER):
+#     os.makedirs(UPLOAD_FOLDER)
+
+# # Tambahin konfigurasi folder upload ke app
+# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# # Endpoint POST untuk menyimpan foto
+# @post_input_order_bp.route('/api/upload-foto', methods=['POST'])
+# def upload_foto():
+#     if 'file' not in request.files:
+#         return jsonify({"status": "error", "message": "File tidak ditemukan"}), 400
+
+#     file = request.files['file']
+
+#     # Cek apakah ada file yang di-upload
+#     if file.filename == '':
+#         return jsonify({"status": "error", "message": "Tidak ada file yang dipilih"}), 400
+
+#     try:
+#         # Amankan nama file
+#         filename = secure_filename(file.filename)
+#         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+#         # Simpan file ke folder
+#         file.save(filepath)
+#         logger.info(f"File berhasil disimpan: {filepath}")
+
+#         # Simpan path ke database
+#         conn = get_db_connection()
+#         if conn is None:
+#             return jsonify({"status": "error", "message": "Koneksi ke database gagal"}), 500
+#         cursor = conn.cursor()
+
+#         sql = "INSERT INTO table_foto (foto) VALUES (%s)"
+#         cursor.execute(sql, (filepath,))
+#         conn.commit()
+
+#         # Tutup koneksi
+#         cursor.close()
+#         conn.close()
+
+#         return jsonify({"status": "success", "message": "Foto berhasil diunggah", "path": filepath}), 201
+#     except Exception as e:
+#         logger.error(f"Error uploading file: {str(e)}")
+#         return jsonify({"status": "error", "message": str(e)}), 500
