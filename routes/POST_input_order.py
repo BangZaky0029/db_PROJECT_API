@@ -199,10 +199,10 @@ def input_order():
             cursor.execute(
                 """
                 INSERT INTO table_prod 
-                (id_input, platform, qty, deadline, status_print, status_produksi, timestamp, id_produk, id_type)
-                VALUES (%s, %s, %s, %s, '-', 'Pilih Status', NOW(), %s, %s)
+                (id_input, id_pesanan, platform, qty, deadline, status_print, status_produksi, id_produk, id_type)
+                VALUES (%s, %s, %s, %s, %s, '-', '-', %s, %s)
                 """,
-                (id_input, platform, qty, deadline, id_produk, id_type)
+                (id_input, id_pesanan, platform, qty, deadline, id_produk, id_type)
             )
             logger.info("Successfully inserted into table_prod")
         except Error as e:
@@ -215,10 +215,10 @@ def input_order():
             cursor.execute(
                 """
                 INSERT INTO table_design 
-                (id_input, id_designer, platform, qty, layout_link, deadline, status_print, timestamp, id_produk, id_type)
-                VALUES (%s, %s, %s, %s, %s, %s, '-', NOW(), %s, %s)
+                (id_input, id_pesanan, id_designer, platform, qty, layout_link, deadline, status_print, timestamp, id_produk, id_type)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, '-', NOW(), %s, %s)
                 """,
-                (id_input, id_designer, platform, qty, None, deadline, id_produk, id_type)
+                (id_input, id_pesanan, id_designer, platform, qty, None, deadline, id_produk, id_type)
             )
             logger.info("Successfully inserted into table_design")
         except Error as e:
@@ -236,7 +236,7 @@ def input_order():
                     """
                     INSERT INTO table_urgent 
                     (id_input, id_pesanan, platform, qty, deadline, status_print, status_produksi, id_produk, id_type)
-                    VALUES (%s, %s, %s, %s, %s, '-', 'Pilih Status', %s, %s)
+                    VALUES (%s, %s, %s, %s, %s, '-', '-', %s, %s)
                     """,
                     (id_input, id_pesanan, platform, qty, deadline, id_produk, id_type)
                 )

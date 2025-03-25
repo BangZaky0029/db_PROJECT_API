@@ -76,132 +76,74 @@ def execute_update(query, values):
 
 @sync_prod_bp.route('/api/sync-prod-to-pesanan', methods=['PUT'])
 def sync_prod_to_pesanan():
-    """ API untuk mengupdate data produksi dan menyinkronkannya ke table_pesanan """
-    # Validasi Content-Type
-    if request.content_type != "application/json":
-        return jsonify({"status": "error", "message": "Invalid Content-Type. Gunakan application/json"}), 400
-    
-    # Parse input data
     try:
+        if request.content_type != "application/json":
+            return jsonify({"status": "error", "message": "Invalid Content-Type"}), 400
+        
         data = request.get_json()
+        id_input = data.get('id_input')
+        
+        if not id_input:
+            return jsonify({'status': 'error', 'message': 'id_input required'}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Batch all updates in a single transaction
+        conn.start_transaction()
+        
+        try:
+            # Check existence once
+            cursor.execute("""
+                SELECT EXISTS(SELECT 1 FROM table_prod WHERE id_input = %s) as prod,
+                       EXISTS(SELECT 1 FROM table_pesanan WHERE id_input = %s) as pesanan
+            """, (id_input, id_input))
+            result = cursor.fetchone()
+            
+            if not (result['prod'] and result['pesanan']):
+                conn.rollback()
+                return jsonify({'status': 'error', 'message': 'Data not found'}), 404
+
+            # Prepare update fields
+            update_fields = []
+            update_values = []
+
+            # Mapping field secara dinamis berdasarkan tabel
+            table_fields = {
+                'table_prod': get_db_columns('table_prod'),
+                'table_pesanan': get_db_columns('table_pesanan'),
+                'table_urgent': get_db_columns('table_urgent')
+            }
+
+            for field in ['id_penjahit', 'id_qc', 'status_produksi']:
+                if data.get(field) is not None:
+                    update_fields.append(f"{field} = %s")
+                    update_values.append(data[field])
+
+            if not update_fields:
+                conn.rollback()
+                return jsonify({'status': 'error', 'message': 'No data to update'}), 400
+
+            # Add id_input to values
+            update_values.append(id_input)
+
+            # Batch execute updates dengan validasi field
+            for table, fields in table_fields.items():
+                valid_update_fields = [f for f in update_fields if f.split(' = ')[0] in fields]
+                if valid_update_fields:
+                    update_sql = f"UPDATE {table} SET {', '.join(valid_update_fields)} WHERE id_input = %s"
+                    cursor.execute(update_sql, update_values)
+
+            conn.commit()
+            return jsonify({'status': 'success', 'message': 'Update successful'}), 200
+
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            cursor.close()
+            conn.close()
+
     except Exception as e:
-        return jsonify({
-            "status": "error", 
-            "message": f"Invalid JSON: {str(e)}"
-        }), 400
-    
-    # Ekstrak data yang diperlukan
-    id_input = data.get('id_input')
-    id_penjahit = data.get('id_penjahit')
-    id_qc = data.get('id_qc')
-    status_produksi = data.get('status_produksi')
-    
-    # Validasi id_input
-    if not id_input:
-        return jsonify({
-            'status': 'error', 
-            'message': 'id_input wajib diisi'
-        }), 400
-    
-    # Validasi data input ada di database
-    is_valid, error_message = validate_input(id_input)
-    if not is_valid:
-        return jsonify({
-            'status': 'error', 
-            'message': error_message
-        }), 404
-    
-    # Siapkan field yang akan diupdate
-    update_fields = []
-    update_values = []
-    
-    # Tambahkan field yang tidak None
-    if id_penjahit is not None:
-        update_fields.append("id_penjahit = %s")
-        update_values.append(id_penjahit)
-    if id_qc is not None:
-        update_fields.append("id_qc = %s")
-        update_values.append(id_qc)
-    if status_produksi is not None:
-        update_fields.append("status_produksi = %s")
-        update_values.append(status_produksi)
-    
-    # Jika tidak ada field yang diupdate
-    if not update_fields:
-        return jsonify({
-            'status': 'error', 
-            'message': 'Tidak ada data yang diperbarui'
-        }), 400
-    
-    # Tambahkan id_input sebagai kondisi WHERE terakhir
-    update_values.append(id_input)
-    
-    # Daftar tabel yang akan diupdate
-    tables_to_update = [
-        'table_prod', 
-        'table_pesanan', 
-        'table_urgent'
-    ]
-    
-    # Proses update untuk setiap tabel
-    update_success = True
-    error_messages = []
-    
-    for table in tables_to_update:
-        # Validasi kolom di tabel
-        table_columns = get_db_columns(table)
-        invalid_columns = [
-            col.split('=')[0].strip() 
-            for col in update_fields 
-            if col.split('=')[0].strip() not in table_columns
-        ]
-        
-        if invalid_columns:
-            logger.warning(f"Kolom tidak valid di {table}: {invalid_columns}")
-            continue
-        
-        # Buat query update
-        query_update = f"UPDATE {table} SET {', '.join(update_fields)} WHERE id_input = %s"
-        
-        # Eksekusi update
-        success, error = execute_update(query_update, update_values)
-        if not success:
-            update_success = False
-            error_messages.append(f"Update {table} gagal: {error}")
-    
-    # Proses timestamp jika ada perubahan penjahit atau QC
-    if update_success:
-        timestamp_updates = []
-        
-        if "id_penjahit = %s" in update_fields:
-            timestamp_updates.append((
-                """UPDATE table_pesanan 
-                SET timestamp_penjahit = COALESCE(timestamp_penjahit, CURRENT_TIMESTAMP) 
-                WHERE id_input = %s""", 
-                (id_input,)
-            ))
-        
-        if "id_qc = %s" in update_fields:
-            timestamp_updates.append((
-                """UPDATE table_pesanan 
-                SET timestamp_qc = COALESCE(timestamp_qc, CURRENT_TIMESTAMP) 
-                WHERE id_input = %s""", 
-                (id_input,)
-            ))
-        
-        # Eksekusi update timestamp
-        for query, params in timestamp_updates:
-            execute_update(query, params)
-        
-        logger.info(f"✅ Data produksi berhasil diperbarui untuk id_input: {id_input}")
-        return jsonify({
-            'status': 'success', 
-            'message': 'Data produksi berhasil diperbarui & timestamp disinkronkan'
-        }), 200
-    
-    # Jika update gagal
-    return jsonify({
-        'status': 'error', 
-        'message': 'Gagal memperbarui data',
-        'details': error_messages
-    }), 500
+        logger.error(f"Update error: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500

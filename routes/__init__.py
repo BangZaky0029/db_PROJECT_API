@@ -9,10 +9,12 @@ from project_api.routes.UPDATE_table_urgent import update_urgent_bp
 from project_api.routes.POST_table_urgent import post_urgent_bp
 
 
+from project_api.routes.Ai_ChatBot.services.whatAppChat import whatsapp_bp, init_scheduler
+
 
 api_bp = Blueprint('api', __name__)
 
-# Daftarkan semua routeS
+# Register core blueprints
 api_bp.register_blueprint(orders_bp)
 api_bp.register_blueprint(post_input_order_bp)
 api_bp.register_blueprint(update_order_bp)
@@ -21,3 +23,8 @@ api_bp.register_blueprint(update_design_bp)
 api_bp.register_blueprint(sync_prod_bp)
 api_bp.register_blueprint(update_urgent_bp)
 api_bp.register_blueprint(post_urgent_bp)
+
+
+api_bp.register_blueprint(whatsapp_bp)
+init_scheduler()
+

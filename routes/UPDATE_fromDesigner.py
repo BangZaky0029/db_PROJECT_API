@@ -1,7 +1,10 @@
-from flask import Blueprint, request, jsonify, Flask
+from flask import Blueprint, request, jsonify, Flask, send_from_directory
 from flask_cors import CORS
 from project_api.db import get_db_connection
 import logging
+import os
+from werkzeug.utils import secure_filename
+import datetime
 
 # 🔹 Inisialisasi Flask
 app = Flask(__name__)
@@ -14,6 +17,15 @@ CORS(update_design_bp)
 # 🔹 Konfigurasi Logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Add these configurations
+UPLOAD_FOLDER = r"C:\KODINGAN\db_manukashop\images"
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+IMAGE_BASE_URL = "http://100.117.80.112:5000/images"
+
+# Create upload folder if it doesn't exist
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 @app.route('/')
 def index():
@@ -107,3 +119,77 @@ def update_print_status():
     finally:
         cursor.close()
         conn.close()
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@update_design_bp.route('/api/update-layout', methods=['POST'])
+def update_layout():
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        id_input = request.form.get('id_input')
+        if not id_input:
+            return jsonify({'status': 'error', 'message': 'id_input wajib diisi'}), 400
+
+        if 'layout_file' not in request.files:
+            return jsonify({'status': 'error', 'message': 'File tidak ditemukan'}), 400
+
+        file = request.files['layout_file']
+        if file.filename == '':
+            return jsonify({'status': 'error', 'message': 'Tidak ada file yang dipilih'}), 400
+
+        if file and allowed_file(file.filename):
+            # Generate unique filename with timestamp
+            timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            filename = secure_filename(f"layout_{timestamp}_{file.filename}")
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
+            
+            # Save file
+            file.save(filepath)
+            
+            # Create URL for database
+            layout_url = f"{IMAGE_BASE_URL}/{filename}"
+
+            # Update table_design
+            execute_update(
+                "UPDATE table_design SET layout_link = %s WHERE id_input = %s",
+                (layout_url, id_input),
+                conn,
+                cursor
+            )
+
+            # Sync with other tables
+            cursor.execute("""
+                UPDATE table_pesanan
+                SET layout_link = %s
+                WHERE id_input = %s
+            """, (layout_url, id_input))
+
+            return jsonify({
+                'status': 'success',
+                'message': 'Layout berhasil diupload dan diupdate',
+                'layout_url': layout_url
+            }), 200
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': f'Format file tidak didukung. Format yang diizinkan: {", ".join(ALLOWED_EXTENSIONS)}'
+            }), 400
+
+    except Exception as e:
+        logger.error(f"Error updating layout: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# Add route to serve images
+@update_design_bp.route('/images/<filename>')
+def serve_image(filename):
+    try:
+        return send_from_directory(UPLOAD_FOLDER, filename)
+    except FileNotFoundError:
+        return "File not found", 404

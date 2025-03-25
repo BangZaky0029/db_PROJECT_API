@@ -45,7 +45,7 @@ reference_data = {
         {"id_type": 45001, "kategori": "RS"},
         {"id_type": 45002, "kategori": "Non-RS"}
     ],
-    "table_produk": [
+     "table_produk": [
         {"id_produk": 47001, "nama_produk": "MNK-Large", "id_bahan": 46001},
         {"id_produk": 47002, "nama_produk": "MNK-Medium", "id_bahan": 46001},
         {"id_produk": 47003, "nama_produk": "MNK-Small", "id_bahan": 46001},
@@ -61,6 +61,7 @@ reference_data = {
         {"id_produk": 47013, "nama_produk": "Bolster", "id_bahan": 46001},
         {"id_produk": 47014, "nama_produk": "Indie Bag", "id_bahan": 46001},
         {"id_produk": 47015, "nama_produk": "Mobile Bag", "id_bahan": 46001},
+        {"id_produk": 47072, "nama_produk": "Scarf", "id_bahan": 46001},
         {"id_produk": 47016, "nama_produk": "Dompet type-1", "id_bahan": 46002},
         {"id_produk": 47017, "nama_produk": "Card Holder", "id_bahan": 46002},
         {"id_produk": 47018, "nama_produk": "Lanyard", "id_bahan": 46002},
@@ -76,13 +77,59 @@ reference_data = {
         {"id_produk": 47028, "nama_produk": "Puffy Table", "id_bahan": 46003},
         {"id_produk": 47029, "nama_produk": "Puffy Loly Bag", "id_bahan": 46003},
         {"id_produk": 47030, "nama_produk": "Puffy Adel Rantai", "id_bahan": 46003},
-        {"id_produk": 47031, "nama_produk": "Marsoto", "id_bahan": 46004}
+        {"id_produk": 47031, "nama_produk": "Marsoto", "id_bahan": 46004},
+        {"id_produk": 47032, "nama_produk": "Clutch", "id_bahan": 46005},
+        {"id_produk": 47033, "nama_produk": "Pouch Sejadah", "id_bahan": 46005},
+        {"id_produk": 47034, "nama_produk": "Sejadah Rumbai", "id_bahan": 46005},
+        {"id_produk": 47035, "nama_produk": "Sejadah Rumbai Anti-Slip", "id_bahan": 46005},
+        {"id_produk": 47036, "nama_produk": "Sejadah Biasa", "id_bahan": 46005},
+        {"id_produk": 47037, "nama_produk": "Sejadah Biasa Anti-Slip", "id_bahan": 46005},
+        {"id_produk": 47038, "nama_produk": "Sejadah Mini", "id_bahan": 46005},
+        {"id_produk": 47039, "nama_produk": "Sejadah Mini Rumbai", "id_bahan": 46005},
+        {"id_produk": 47040, "nama_produk": "Pouch Make-up Puffy", "id_bahan": 46003},
+        {"id_produk": 47041, "nama_produk": "Pouch Make-up", "id_bahan": 46003},
+        {"id_produk": 47042, "nama_produk": "Mukena Print", "id_bahan": 46006},
+        {"id_produk": 47043, "nama_produk": "Mukena Polos", "id_bahan": 46008},
+        {"id_produk": 47044, "nama_produk": "MNK-Kulit", "id_bahan": 46002},
+        {"id_produk": 47045, "nama_produk": "MNK-Paku", "id_bahan": 46001},
+        {"id_produk": 47046, "nama_produk": "Alana Ransel", "id_bahan": 46001},
+        {"id_produk": 47047, "nama_produk": "MNK-Velvet-L", "id_bahan": 46009},
+        {"id_produk": 47048, "nama_produk": "MNK-Velvet-M", "id_bahan": 46009},
+        {"id_produk": 47049, "nama_produk": "MNK-Velvet-S", "id_bahan": 46009},
+        {"id_produk": 47050, "nama_produk": "MNK-Velvet-Middle", "id_bahan": 46009},
+        {"id_produk": 47051, "nama_produk": "MNK-Velvet-Mini", "id_bahan": 46009},
+        {"id_produk": 47052, "nama_produk": "ToteBag Large-Velvet", "id_bahan": 46009},
+        {"id_produk": 47053, "nama_produk": "SJD-Velvet", "id_bahan": 46009},
+        {"id_produk": 47054, "nama_produk": "SJD-Velvet-Rumbai", "id_bahan": 46009},
+        {"id_produk": 47055, "nama_produk": "Clutch-Velvet", "id_bahan": 46009},
+        {"id_produk": 47056, "nama_produk": "WaistBag", "id_bahan": 46001},
+        {"id_produk": 47057, "nama_produk": "Brandon", "id_bahan": 46001},
+        {"id_produk": 47058, "nama_produk": "Raine SlingBag", "id_bahan": 46001},
+        {"id_produk": 47059, "nama_produk": "Laurent CrossBody Bag", "id_bahan": 46001},
+        {"id_produk": 47060, "nama_produk": "SR.Cover Custom", "id_bahan": 46001},
+        {"id_produk": 47061, "nama_produk": "SR.Cover XL (30 inch)", "id_bahan": 46001},
+        {"id_produk": 47062, "nama_produk": "SR.Cover L (28 inch)", "id_bahan": 46001},
+        {"id_produk": 47063, "nama_produk": "SR.Cover M (24 inch)", "id_bahan": 46001},
+        {"id_produk": 47064, "nama_produk": "SR.Cover S (20 inch)", "id_bahan": 46001},
+        {"id_produk": 47065, "nama_produk": "Cover Al Qur'an", "id_bahan": 46001},
+        {"id_produk": 47066, "nama_produk": "MNK Medium 3D Edition", "id_bahan": 46001},
+        {"id_produk": 47067, "nama_produk": "SR.Cover Custom-scuba", "id_bahan": 46007},
+        {"id_produk": 47068, "nama_produk": "SR.Cover XL (30 inch)-scuba", "id_bahan": 46007},
+        {"id_produk": 47069, "nama_produk": "SR.Cover L (28 inch)-scuba", "id_bahan": 46007},
+        {"id_produk": 47070, "nama_produk": "SR.Cover M (24 inch)-scuba", "id_bahan": 46007},
+        {"id_produk": 47071, "nama_produk": "SR.Cover S (20 inch)-scuba", "id_bahan": 46007}
+
     ],
     "table_bahan": [
         {"id_bahan": 46001, "bahan": "Kanvas"},
         {"id_bahan": 46002, "bahan": "Kulit"},
         {"id_bahan": 46003, "bahan": "Nilon"},
-        {"id_bahan": 46004, "bahan": "Marsoto"}
+        {"id_bahan": 46004, "bahan": "Marsoto"},
+        {"id_bahan": 46005, "bahan": "Baby Kanvas"},
+        {"id_bahan": 46006, "bahan": "Parasut"},
+        {"id_bahan": 46007, "bahan": "Scuba"},
+        {"id_bahan": 46008, "bahan": "Lain-Nya"},
+        {"id_bahan": 46009, "bahan": "Velvet"}
     ]
 }
 
@@ -293,7 +340,7 @@ def get_inputOrder():
         
         # Mengambil semua data kecuali field 'link'
         cursor.execute("""
-            SELECT id_input, TimeTemp, id_pesanan, id_admin, Platform, qty, nama_ket, Deadline 
+            SELECT id_input, TimeTemp, id_pesanan, id_admin, Platform, qty, link, nama_ket, Deadline 
             FROM table_input_order
         """)
         orders = cursor.fetchall()
