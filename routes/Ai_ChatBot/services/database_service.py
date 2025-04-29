@@ -12,24 +12,25 @@ class DatabaseService:
         cursor = conn.cursor(dictionary=True)
         try:
             query = """
-                SELECT 
-                    p.id_input, 
-                    a.nama AS nama_admin,
-                    pr.nama_produk,
-                    p.platform,
-                    DATE(p.timestamp) AS inputan_masuk,
-                    p.deadline,
-                    p.qty AS Jumlah_pcs,
-                    io.link AS link_foto,
-                    p.status_print,
-                    p.status_produksi,
-                    a.ID AS id_admin
-                FROM table_pesanan p
-                JOIN table_produk pr ON p.id_produk = pr.id_produk
-                JOIN table_admin a ON p.id_admin = a.ID
-                JOIN table_input_order io ON p.id_input = io.id_input
-                WHERE p.status_produksi = '-' OR p.status_print = '-'
-                ORDER BY a.nama, p.deadline ASC
+                        SELECT 
+                            p.id_input, 
+                            a.nama AS nama_admin,
+                            pr.nama_produk,
+                            p.platform,
+                            DATE(p.timestamp) AS inputan_masuk,
+                            p.deadline,
+                            p.qty AS Jumlah_pcs,
+                            p.status_print,
+                            p.status_produksi,
+                            a.ID AS id_admin
+                        FROM table_pesanan p
+                        JOIN table_produk pr ON p.id_produk = pr.id_produk
+                        JOIN table_admin a ON p.id_admin = a.ID
+                        JOIN table_input_order io ON p.id_input = io.id_input
+                        WHERE 
+                            p.deadline BETWEEN '2025-03-01' AND '2025-12-31'  -- Filter deadline hanya di bulan Maret
+                            AND p.status_produksi = '-'  -- Hanya pesanan yang belum diproduksi
+                        ORDER BY p.deadline ASC
             """
             cursor.execute(query)
             return cursor.fetchall()

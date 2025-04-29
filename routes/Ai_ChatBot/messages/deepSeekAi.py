@@ -1,4 +1,3 @@
- 
 import requests
 import json
 from ..config.ai_config import API_KEY, API_URL, MODEL_API
@@ -19,14 +18,12 @@ Tolong berikan:
 2. Highlight pesanan yang urgent (jika ada)
 3. Rekomendasi prioritas pengerjaan
 """
+
         headers = {
             "Authorization": f"Bearer {API_KEY}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://openrouter.ai/",
-            "X-Title": "AI Chat Bot",
-            "User-Agent": "Mozilla/5.0"  # Added User-Agent
+            "Content-Type": "application/json"
         }
-        
+
         payload = {
             "model": MODEL_API,
             "messages": [
@@ -36,35 +33,22 @@ Tolong berikan:
                 },
                 {
                     "role": "user",
-                    "content": prompt
+                    "content": ai_prompt
                 }
             ],
             "temperature": 0.7,
-            "max_tokens": 500,
-            "stream": False,
-            "top_p": 0.9  # Added parameter for better response
+            "max_tokens": 800,
+            "top_p": 0.9,
+            "stream": False
         }
 
-        print(f"Request URL: {API_URL}")
-        print(f"Headers: {json.dumps(headers, indent=2)}")
-        print(f"Payload: {json.dumps(payload, indent=2)}")
-        
         response = requests.post(API_URL, headers=headers, json=payload, timeout=30)
-        print(f"Response Status: {response.status_code}")
-        print(f"Response Body: {response.text}")
-        
+
         if not response.ok:
             return f"API Error: {response.status_code} - {response.text}"
-        
-        result = response.json()
-        return result['choices'][0]['message']['content'].strip() if 'choices' in result else "No response generated"
-            
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        return f"Error: {str(e)}"
 
-# Example usage
-if __name__ == "__main__":
-    prompt = "What is the meaning of life?"
-    response = get_ai_response(prompt)
-    print("AI Response:", response)
+        result = response.json()
+        return result['choices'][0]['message']['content'].strip()
+
+    except Exception as e:
+        return f"Error: {str(e)}"

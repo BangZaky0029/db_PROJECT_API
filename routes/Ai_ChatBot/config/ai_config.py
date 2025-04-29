@@ -1,4 +1,6 @@
-# OpenRouter AI Configuration
-API_KEY = "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"
-API_URL = "https://openrouter.ai/api/v1"
-MODEL_API = "mistralai/mistral-small-3.1-24b-instruct:free"  # Changed to Mistral free model
+# config/ai_config.py
+API_KEY = "TOGETHER_API_KEY=78a4b8df3c775ec51ef097bc6079db1e064fa821a3e9abe687022dff9736a435"
+API_URL = "https://api.together.xyz/v1/chat/completions"
+MODEL_API = "meta-llama/Meta-Llama-3-70B-Instruct"
+
+

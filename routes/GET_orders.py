@@ -18,11 +18,13 @@ reference_data = {
     "table_admin": [
         {"ID": 1001, "nama": "Lilis"},
         {"ID": 1002, "nama": "Ina"},
-        {"ID": 1003, "nama": "Indy"}
+        {"ID": 1003, "nama": "Indy"},
+        {"ID": 1004, "nama": "Untung"},
     ],
     "table_desainer": [
         {"ID": 1101, "nama": "IMAM"},
-        {"ID": 1102, "nama": "JHODI"}
+        {"ID": 1102, "nama": "JHODI"},
+        {"ID": 1103, "nama": "ZAKY"}
     ],
     "table_kurir": [
         {"ID": 1501, "nama": "teddy"},
@@ -117,7 +119,13 @@ reference_data = {
         {"id_produk": 47068, "nama_produk": "SR.Cover XL (30 inch)-scuba", "id_bahan": 46007},
         {"id_produk": 47069, "nama_produk": "SR.Cover L (28 inch)-scuba", "id_bahan": 46007},
         {"id_produk": 47070, "nama_produk": "SR.Cover M (24 inch)-scuba", "id_bahan": 46007},
-        {"id_produk": 47071, "nama_produk": "SR.Cover S (20 inch)-scuba", "id_bahan": 46007}
+        {"id_produk": 47071, "nama_produk": "SR.Cover S (20 inch)-scuba", "id_bahan": 46007},
+        {"id_produk": 47073, "nama_produk": "Tas Koper Bu Ola", "id_bahan": 46010},
+        {"id_produk": 47074, "nama_produk": "Renata Bag", "id_bahan": 46005},
+        {"id_produk": 47075, "nama_produk": "Estelle Bag", "id_bahan": 46001},
+        {"id_produk": 47076, "nama_produk": "ToteBag Large Pouch", "id_bahan": 46001},
+        {"id_produk": 47077, "nama_produk": "ARA BAG", "id_bahan": 46001}
+
 
     ],
     "table_bahan": [
@@ -129,7 +137,8 @@ reference_data = {
         {"id_bahan": 46006, "bahan": "Parasut"},
         {"id_bahan": 46007, "bahan": "Scuba"},
         {"id_bahan": 46008, "bahan": "Lain-Nya"},
-        {"id_bahan": 46009, "bahan": "Velvet"}
+        {"id_bahan": 46009, "bahan": "Velvet"},
+        {"id_bahan": 46010, "bahan": "Bahan Custom"}
     ]
 }
 
