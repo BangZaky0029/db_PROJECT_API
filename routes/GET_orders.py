@@ -16,10 +16,11 @@ CORS(orders_bp)
 # Reference data for names
 reference_data = {
     "table_admin": [
-        {"ID": 1001, "nama": "Lilis"},
+        {"ID": 1001, "nama": "Vinka"},
         {"ID": 1002, "nama": "Ina"},
         {"ID": 1003, "nama": "Indy"},
         {"ID": 1004, "nama": "Untung"},
+        {"ID": 1005, "nama": "Ikbal"}
     ],
     "table_desainer": [
         {"ID": 1101, "nama": "IMAM"},
@@ -124,8 +125,11 @@ reference_data = {
         {"id_produk": 47074, "nama_produk": "Renata Bag", "id_bahan": 46005},
         {"id_produk": 47075, "nama_produk": "Estelle Bag", "id_bahan": 46001},
         {"id_produk": 47076, "nama_produk": "ToteBag Large Pouch", "id_bahan": 46001},
-        {"id_produk": 47077, "nama_produk": "ARA BAG", "id_bahan": 46001}
-
+        {"id_produk": 47077, "nama_produk": "ARA BAG", "id_bahan": 46001},
+        {"id_produk": 47078, "nama_produk": "Miranda Bag", "id_bahan": 46001}, 
+        {"id_produk": 47079, "nama_produk": "Laurent Slingbag", "id_bahan": 46001},
+        {"id_produk": 47080, "nama_produk": "Tania", "id_bahan": 46001}, 
+        {"id_produk": 47081, "nama_produk": "Dalina", "id_bahan": 46001} 
 
     ],
     "table_bahan": [
