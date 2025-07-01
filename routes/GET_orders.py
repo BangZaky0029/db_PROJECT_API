@@ -4,6 +4,7 @@ from project_api.db import get_db_connection
 from mysql.connector import Error
 from datetime import datetime
 import logging
+import sql
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -234,33 +235,6 @@ def get_id_admin(id_input):
         logger.error(f"❌ Error mendapatkan id_admin: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
     
-# GET : nama_ket from table_input_order
-@orders_bp.route('/api/get_nama_ket/<string:id_input>', methods=['GET'])
-def get_nama_ket(id_input):
-    """ Mendapatkan isi field nama_ket berdasarkan id_input dari table_input_order """
-    try:
-        id_input = id_input.strip()  # Hapus spasi atau karakter tersembunyi
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-
-        # Query untuk mengambil nama_ket berdasarkan id_input
-        query = "SELECT nama_ket FROM table_input_order WHERE id_input = %s"
-        cursor.execute(query, (id_input,))
-        result = cursor.fetchone()
-
-        if not result:
-            return jsonify({"status": "error", "message": f"Data dengan id_input '{id_input}' tidak ditemukan"}), 404
-
-        return jsonify({"status": "success", "id_input": id_input, "nama_ket": result["nama_ket"]}), 200
-
-    except Exception as e:
-        return jsonify({"status": "error", "message": f"Kesalahan sistem: {str(e)}"}), 500
-
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
 
 # Endpoint untuk mengambil semua data dari table_urgent
 @orders_bp.route('/api/get_table_urgent', methods=['GET'])
@@ -343,28 +317,384 @@ def get_orders():
             cursor.close()
             conn.close()
 
-# GET: Ambil semua data Inputable
-# GET: Ambil semua data Inputable tanpa field 'link'
 @orders_bp.route('/api/get-input-table', methods=['GET'])
 def get_inputOrder():
+    """
+    Optimized endpoint to get input table data sorted by newest id_input first
+    """
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        # Mengambil semua data kecuali field 'link'
+        # Enhanced query with sorting by id_input (descending = newest first)
+        # Added better column selection and explicit ordering
         cursor.execute("""
-            SELECT id_input, TimeTemp, id_pesanan, id_admin, Platform, qty, link, nama_ket, Deadline 
-            FROM table_input_order
+            SELECT 
+                id_input, 
+                TimeTemp, 
+                id_pesanan, 
+                id_admin, 
+                Platform, 
+                qty, 
+                nama_ket, 
+                Deadline 
+            FROM table_input_order 
+            ORDER BY 
+                CAST(id_input AS UNSIGNED) DESC,
+                TimeTemp DESC
         """)
+        
         orders = cursor.fetchall()
         
-        return jsonify({'status': 'success', 'data': orders}), 200
+        # Additional data processing if needed
+        processed_orders = []
+        for order in orders:
+            # Ensure all fields have default values to prevent None errors
+            processed_order = {
+                'id_input': order.get('id_input', ''),
+                'TimeTemp': order.get('TimeTemp', ''),
+                'id_pesanan': order.get('id_pesanan', ''),
+                'id_admin': order.get('id_admin', ''),
+                'Platform': order.get('Platform', ''),
+                'qty': order.get('qty', 0),
+                'nama_ket': order.get('nama_ket', ''),
+                'Deadline': order.get('Deadline', '')
+            }
+            
+            # Format TimeTemp if it's a datetime object
+            if isinstance(processed_order['TimeTemp'], datetime):
+                processed_order['TimeTemp'] = processed_order['TimeTemp'].strftime('%Y-%m-%d %H:%M:%S')
+            
+            # Format Deadline if it's a datetime object
+            if isinstance(processed_order['Deadline'], datetime):
+                processed_order['Deadline'] = processed_order['Deadline'].isoformat()
+            
+            processed_orders.append(processed_order)
+        
+        logger.info(f"Successfully retrieved {len(processed_orders)} orders, sorted by newest first")
+        
+        return jsonify({
+            'status': 'success', 
+            'data': processed_orders,
+            'total_records': len(processed_orders),
+            'sorted_by': 'id_input_desc'
+        }), 200
+        
     except Error as e:
-        logger.error(f"Error getting input table: {str(e)}")
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+        logger.error(f"Database error in get_inputOrder: {str(e)}")
+        return jsonify({
+            'status': 'error', 
+            'message': 'Database connection error',
+            'error_code': 'DB_ERROR'
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Unexpected error in get_inputOrder: {str(e)}")
+        return jsonify({
+            'status': 'error', 
+            'message': 'Internal server error',
+            'error_code': 'INTERNAL_ERROR'
+        }), 500
+        
     finally:
-        if conn.is_connected(): 
+        if 'cursor' in locals() and cursor:
             cursor.close()
+        if 'conn' in locals() and conn and conn.is_connected(): 
+            conn.close()
+
+
+@orders_bp.route('/api/get_nama_ket/<string:id_input>', methods=['GET'])
+def get_nama_ket(id_input):
+    """
+    Optimized endpoint to get nama_ket by id_input with better error handling
+    """
+    try:
+        # Input validation and sanitization
+        id_input = id_input.strip()
+        
+        if not id_input:
+            return jsonify({
+                "status": "error", 
+                "message": "id_input parameter is required and cannot be empty",
+                "error_code": "INVALID_INPUT"
+            }), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Optimized query with parameterized statement
+        query = """
+            SELECT 
+                id_input,
+                nama_ket,
+                TimeTemp,
+                Platform
+            FROM table_input_order 
+            WHERE id_input = %s
+            LIMIT 1
+        """
+        
+        cursor.execute(query, (id_input,))
+        result = cursor.fetchone()
+        
+        if not result:
+            logger.warning(f"No data found for id_input: {id_input}")
+            return jsonify({
+                "status": "error", 
+                "message": f"Data dengan id_input '{id_input}' tidak ditemukan",
+                "error_code": "NOT_FOUND"
+            }), 404
+        
+        # Process the result
+        response_data = {
+            "status": "success",
+            "id_input": result["id_input"],
+            "nama_ket": result["nama_ket"] or "",
+            "additional_info": {
+                "TimeTemp": result.get("TimeTemp", ""),
+                "Platform": result.get("Platform", "")
+            }
+        }
+        
+        # Format TimeTemp if it's a datetime object
+        if isinstance(response_data["additional_info"]["TimeTemp"], datetime):
+            response_data["additional_info"]["TimeTemp"] = response_data["additional_info"]["TimeTemp"].strftime('%Y-%m-%d %H:%M:%S')
+        
+        logger.info(f"Successfully retrieved nama_ket for id_input: {id_input}")
+        
+        return jsonify(response_data), 200
+        
+    except Error as e:
+        logger.error(f"Database error in get_nama_ket for id_input {id_input}: {str(e)}")
+        return jsonify({
+            "status": "error", 
+            "message": "Database connection error",
+            "error_code": "DB_ERROR"
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Unexpected error in get_nama_ket for id_input {id_input}: {str(e)}")
+        return jsonify({
+            "status": "error", 
+            "message": f"Kesalahan sistem: {str(e)}",
+            "error_code": "INTERNAL_ERROR"
+        }), 500
+        
+    finally:
+        if 'cursor' in locals() and cursor:
+            cursor.close()
+        if 'conn' in locals() and conn and conn.is_connected():
+            conn.close()
+
+
+@orders_bp.route('/api/search-orders', methods=['POST'])
+def search_orders():
+    """
+    New optimized search endpoint for better performance
+    """
+    try:
+        # Get search parameters from request
+        data = request.get_json() or {}
+        search_order_id = data.get('order_id', '').strip()
+        search_nama_ket = data.get('nama_ket', '').strip()
+        platform_filter = data.get('platform', '').strip()
+        limit = int(data.get('limit', 100))
+        offset = int(data.get('offset', 0))
+        
+        # Build dynamic query based on search parameters
+        base_query = """
+            SELECT 
+                id_input, 
+                TimeTemp, 
+                id_pesanan, 
+                id_admin, 
+                Platform, 
+                qty, 
+                nama_ket, 
+                Deadline 
+            FROM table_input_order 
+        """
+        
+        conditions = []
+        params = []
+        
+        # Add search conditions
+        if search_order_id:
+            conditions.append("(id_input LIKE %s OR id_pesanan LIKE %s)")
+            params.extend([f"%{search_order_id}%", f"%{search_order_id}%"])
+        
+        if search_nama_ket:
+            conditions.append("nama_ket LIKE %s")
+            params.append(f"%{search_nama_ket}%")
+        
+        if platform_filter and platform_filter.lower() != 'all':
+            conditions.append("Platform = %s")
+            params.append(platform_filter)
+        
+        # Combine conditions
+        if conditions:
+            base_query += " WHERE " + " AND ".join(conditions)
+        
+        # Add sorting and pagination
+        base_query += " ORDER BY CAST(id_input AS UNSIGNED) DESC, TimeTemp DESC"
+        base_query += " LIMIT %s OFFSET %s"
+        params.extend([limit, offset])
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Execute search query
+        cursor.execute(base_query, params)
+        orders = cursor.fetchall()
+        
+        # Get total count for pagination
+        count_query = "SELECT COUNT(*) as total FROM table_input_order"
+        if conditions:
+            count_query += " WHERE " + " AND ".join(conditions)
+        
+        cursor.execute(count_query, params[:-2])  # Exclude limit and offset params
+        total_count = cursor.fetchone()['total']
+        
+        # Process results
+        processed_orders = []
+        for order in orders:
+            processed_order = {
+                'id_input': order.get('id_input', ''),
+                'TimeTemp': order.get('TimeTemp', ''),
+                'id_pesanan': order.get('id_pesanan', ''),
+                'id_admin': order.get('id_admin', ''),
+                'Platform': order.get('Platform', ''),
+                'qty': order.get('qty', 0),
+                'nama_ket': order.get('nama_ket', ''),
+                'Deadline': order.get('Deadline', '')
+            }
+            
+            # Format datetime fields
+            for field in ['TimeTemp', 'Deadline']:
+                if isinstance(processed_order[field], datetime):
+                    processed_order[field] = processed_order[field].isoformat()
+            
+            processed_orders.append(processed_order)
+        
+        logger.info(f"Search completed: {len(processed_orders)} results found")
+        
+        return jsonify({
+            'status': 'success',
+            'data': processed_orders,
+            'pagination': {
+                'total_records': total_count,
+                'current_page': (offset // limit) + 1,
+                'total_pages': (total_count + limit - 1) // limit,
+                'records_per_page': limit
+            },
+            'search_criteria': {
+                'order_id': search_order_id,
+                'nama_ket': search_nama_ket,
+                'platform': platform_filter
+            }
+        }), 200
+        
+    except ValueError as e:
+        return jsonify({
+            'status': 'error',
+            'message': 'Invalid parameter format',
+            'error_code': 'INVALID_PARAMETER'
+        }), 400
+        
+    except Error as e:
+        logger.error(f"Database error in search_orders: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Database connection error',
+            'error_code': 'DB_ERROR'
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Unexpected error in search_orders: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Internal server error',
+            'error_code': 'INTERNAL_ERROR'
+        }), 500
+        
+    finally:
+        if 'cursor' in locals() and cursor:
+            cursor.close()
+        if 'conn' in locals() and conn and conn.is_connected():
+            conn.close()
+
+
+# Additional utility endpoints for better performance
+
+@orders_bp.route('/api/get-platforms', methods=['GET'])
+def get_platforms():
+    """Get distinct platforms for filter dropdown"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT DISTINCT Platform FROM table_input_order WHERE Platform IS NOT NULL AND Platform != '' ORDER BY Platform")
+        platforms = [row[0] for row in cursor.fetchall()]
+        
+        return jsonify({
+            'status': 'success',
+            'data': platforms
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error getting platforms: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to get platforms'
+        }), 500
+        
+    finally:
+        if 'cursor' in locals() and cursor:
+            cursor.close()
+        if 'conn' in locals() and conn and conn.is_connected():
+            conn.close()
+
+
+@orders_bp.route('/api/get-stats', methods=['GET'])
+def get_stats():
+    """Get basic statistics for dashboard"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Get various statistics
+        stats_queries = {
+            'total_orders': "SELECT COUNT(*) as count FROM table_input_order",
+            'today_orders': "SELECT COUNT(*) as count FROM table_input_order WHERE DATE(TimeTemp) = CURDATE()",
+            'platforms': "SELECT Platform, COUNT(*) as count FROM table_input_order WHERE Platform IS NOT NULL GROUP BY Platform ORDER BY count DESC"
+        }
+        
+        stats = {}
+        
+        for stat_name, query in stats_queries.items():
+            cursor.execute(query)
+            if stat_name == 'platforms':
+                stats[stat_name] = cursor.fetchall()
+            else:
+                result = cursor.fetchone()
+                stats[stat_name] = result['count'] if result else 0
+        
+        return jsonify({
+            'status': 'success',
+            'data': stats
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error getting stats: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': 'Failed to get statistics'
+        }), 500
+        
+    finally:
+        if 'cursor' in locals() and cursor:
+            cursor.close()
+        if 'conn' in locals() and conn and conn.is_connected():
             conn.close()
 
 
