@@ -37,14 +37,16 @@ reference_data = {
         {"ID": 1301, "nama": "Mas Ari"},
         {"ID": 1302, "nama": "Mas Saep"},
         {"ID": 1303, "nama": "Mas Egeng"},
-        {"ID": 1304, "nama": "Maman"},
-        {"ID": 1305, "nama": "Mas Uu"}
+        {"ID": 1304, "nama": "Pak Maman"},
+        {"ID": 1305, "nama": "Mas Uu"},
+        {"ID": 1306, "nama": "Pak Kamto"},
+        {"ID": 1307, "nama": "Mas Gugun"},
+        {"ID": 1308, "nama": "Multi Penjahit"}
     ],
     "table_qc": [
-        {"ID": 1401, "nama": "tita"},
-        {"ID": 1402, "nama": "ina"},
-        {"ID": 1403, "nama": "lilis"}
+        {"ID": 1404, "nama": "Multi QC"}
     ],
+
     "table_type_produk": [
         {"id_type": 45001, "kategori": "RS"},
         {"id_type": 45002, "kategori": "Non-RS"}
