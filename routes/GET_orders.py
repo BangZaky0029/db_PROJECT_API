@@ -1,6 +1,9 @@
 from flask import Flask, Blueprint, request, jsonify
 from flask_cors import CORS
-from project_api.db import get_db_connection
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from db import get_db_connection
 from mysql.connector import Error
 from datetime import datetime
 import logging

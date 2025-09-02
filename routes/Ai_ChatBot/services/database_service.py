@@ -1,5 +1,8 @@
  
-from project_api.db import get_db_connection
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+from db import get_db_connection
 from datetime import datetime
 import logging
 

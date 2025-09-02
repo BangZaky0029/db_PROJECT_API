@@ -1,6 +1,9 @@
 from flask import Blueprint, request, jsonify, Flask, send_from_directory
 from flask_cors import CORS
-from project_api.db import get_db_connection
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from db import get_db_connection
 import logging
 import os
 from werkzeug.utils import secure_filename
@@ -21,7 +24,7 @@ logger = logging.getLogger(__name__)
 # Add these configurations
 UPLOAD_FOLDER = r"C:\KODINGAN\db_manukashop\images"
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-IMAGE_BASE_URL = "http://100.117.80.112:5000/images"
+IMAGE_BASE_URL = "http://100.124.58.32:5000/images"
 
 # Create upload folder if it doesn't exist
 if not os.path.exists(UPLOAD_FOLDER):
