@@ -8,6 +8,22 @@ from db import get_db_connection
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Import WhatsApp notification system
+try:
+    import sys
+    import os
+    # Add note_ai path to sys.path
+    note_ai_path = os.path.join(os.path.dirname(__file__), 'note_ai')
+    if note_ai_path not in sys.path:
+        sys.path.insert(0, note_ai_path)
+    
+    from core.note_notification_handler import notification_handler
+    NOTIFICATION_ENABLED = True
+    logger.info("WhatsApp notification system loaded successfully")
+except ImportError as e:
+    NOTIFICATION_ENABLED = False
+    logger.warning(f"WhatsApp notification system not available: {str(e)}")
+
 # Create Blueprint
 note_bp = Blueprint('note_operations', __name__)
 
@@ -20,6 +36,8 @@ USER_PINS = {
     'Untung': '7435',
     'Imam': '4985'
 }
+
+# Database connection imported from db.py
 
 # Database connection imported from db.py
 
@@ -74,11 +92,60 @@ def create_note():
         
         logger.info(f"Note created successfully with ID: {note_id}")
         
-        return jsonify({
+        # Prepare note data untuk notification system
+        note_data = {
+            'id_input': data['id_input'],
+            'table_source': data['table_source'],
+            'note_title': data['note_title'],
+            'note_content': data['note_content'],
+            'created_by': data['created_by'],
+            'note_id': note_id,
+            'created_at': datetime.now().isoformat()
+        }
+        
+        # Process WhatsApp notifications jika ada mention
+        notification_result = None
+        logger.info(f"NOTIFICATION_ENABLED status: {NOTIFICATION_ENABLED}")
+        logger.info(f"Note data for notification: {note_data}")
+        
+        if NOTIFICATION_ENABLED:
+            try:
+                logger.info("Starting notification processing...")
+                notification_result = notification_handler.process_note_creation(note_data)
+                logger.info(f"Notification processing completed: {notification_result.get('message', 'No details')}")
+                logger.info(f"Full notification result: {notification_result}")
+            except Exception as e:
+                logger.error(f"Error processing notifications: {str(e)}")
+                notification_result = {
+                    'success': False,
+                    'error': str(e),
+                    'message': 'Notification processing failed'
+                }
+        else:
+            logger.warning("Notification system is disabled or not available")
+        
+        # Prepare response
+        response_data = {
             'status': 'success',
             'message': 'Note created successfully',
             'note_id': note_id
-        }), 201
+        }
+        
+        # Add notification info jika ada
+        if notification_result:
+            response_data['notification'] = {
+                'enabled': NOTIFICATION_ENABLED,
+                'mentions_processed': notification_result.get('mentions_processed', 0),
+                'notifications_sent': notification_result.get('notifications_sent', 0),
+                'success': notification_result.get('success', False)
+            }
+            
+            # Add notification details jika berhasil
+            if notification_result.get('success') and notification_result.get('notifications_sent', 0) > 0:
+                response_data['notification']['successful_mentions'] = notification_result.get('successful_mentions', [])
+                response_data['message'] += f" and {notification_result.get('notifications_sent', 0)} WhatsApp notification(s) sent"
+        
+        return jsonify(response_data), 201
         
     except Exception as e:
         logger.error(f"Error creating note: {str(e)}")
@@ -89,6 +156,53 @@ def create_note():
     finally:
         if 'conn' in locals() and conn:
             conn.close()
+
+@note_bp.route('/debug/notification', methods=['GET'])
+def debug_notification():
+    """Debug endpoint untuk test notification system"""
+    try:
+        logger.info(f"Debug: NOTIFICATION_ENABLED = {NOTIFICATION_ENABLED}")
+        
+        if not NOTIFICATION_ENABLED:
+            return jsonify({
+                'status': 'error',
+                'message': 'Notification system is disabled',
+                'notification_enabled': NOTIFICATION_ENABLED
+            }), 500
+        
+        # Test data
+        test_note_data = {
+            'id_note': 999,
+            'note_title': 'Test notification for @vinka',
+            'note_content': 'This is a test notification to @vinka',
+            'id_input': 'debug_test',
+            'table_source': 'table_design',
+            'created_by': 'debug_user',
+            'created_at': datetime.now().isoformat()
+        }
+        
+        logger.info(f"Debug: Testing notification with data: {test_note_data}")
+        
+        # Test notification
+        result = notification_handler.process_note_creation(test_note_data)
+        
+        logger.info(f"Debug: Notification result: {result}")
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Debug notification test completed',
+            'notification_enabled': NOTIFICATION_ENABLED,
+            'test_data': test_note_data,
+            'notification_result': result
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Debug notification error: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f'Debug notification error: {str(e)}',
+            'notification_enabled': NOTIFICATION_ENABLED
+        }), 500
 
 # PIN Authentication endpoint
 @note_bp.route('/api/auth/verify-pin', methods=['POST'])

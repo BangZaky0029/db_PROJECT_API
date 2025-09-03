@@ -1,0 +1,7 @@
+Ganti d server : 
+- Dir : project_api
+- Ip  : 100.117.80.112
+
+Ganti d testing : python -m db_PROJECT_API.app
+- Dir : db_PROJECT_API
+- Ip  : 100.124.58.32

@@ -8,6 +8,7 @@ from .UPDATE_fromProduction import sync_prod_bp
 from .UPDATE_table_urgent import update_urgent_bp
 from .POST_table_urgent import post_urgent_bp
 from .note_operations import note_bp
+from .note_ai.test_notification import test_notification_bp
 
 
 from .Ai_ChatBot.services.whatAppChat import whatsapp_bp, init_scheduler
@@ -25,6 +26,7 @@ api_bp.register_blueprint(sync_prod_bp)
 api_bp.register_blueprint(update_urgent_bp)
 api_bp.register_blueprint(post_urgent_bp)
 api_bp.register_blueprint(note_bp)
+api_bp.register_blueprint(test_notification_bp)
 
 
 api_bp.register_blueprint(whatsapp_bp)
