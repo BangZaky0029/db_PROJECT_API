@@ -1,7 +1,7 @@
 from flask import Blueprint
 
 # Import semua blueprint dari routes
-from db_PROJECT_API.routes import api_bp
+from project_api.routes import api_bp
 
 # Buat blueprint utama untuk db_PROJECT_API
 main_bp = Blueprint('main', __name__)
