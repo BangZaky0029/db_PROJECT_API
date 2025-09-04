@@ -1,6 +1,6 @@
 from datetime import datetime
-from ...services.database_service import DatabaseService
-from ..utils.date_utils import DateUtils
+from project_api.routes.Ai_ChatBot.services.database_service import DatabaseService
+from project_api.routes.Ai_ChatBot.utils.date_utils import DateUtils
 
 class OrderAnalyzer:
     def __init__(self):
