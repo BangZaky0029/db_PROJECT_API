@@ -4,7 +4,7 @@ import threading
 import time
 import logging
 import json
-from ..core.message_generator import MessageGenerator
+from ..config.core.message_generator import MessageGenerator
 from ..messages.message_service import send_whatsapp_message
 from ..config.wa_config import NOMER_1, NOMER_2, NOMER_3, NOMER_4
 from ..messages.deepSeekAi import get_ai_response

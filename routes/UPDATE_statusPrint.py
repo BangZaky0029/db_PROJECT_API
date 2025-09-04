@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from db_PROJECT_API.db import get_db_connection
+from project_api.db import get_db_connection
 import logging
 
 # Configure logger

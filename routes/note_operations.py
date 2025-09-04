@@ -17,7 +17,7 @@ try:
     if note_ai_path not in sys.path:
         sys.path.insert(0, note_ai_path)
     
-    from core.note_notification_handler import notification_handler
+    from note_ai.core.note_notification_handler import notification_handler
     NOTIFICATION_ENABLED = True
     logger.info("WhatsApp notification system loaded successfully")
 except ImportError as e:

@@ -8,7 +8,7 @@ from ..config.wa_config import (
     ADMIN_PLATFORMS, SUPERVISOR, PLATFORM_ADMINS
 )
 
-from ..core.message_generator import MessageGenerator
+from ..config.core.message_generator import MessageGenerator
 from ..messages.deepSeekAi import get_ai_response
 
 logger = logging.getLogger(__name__)

@@ -4,8 +4,8 @@ from ..config.wa_config import (
     API_KEY, NOMER_1, NOMER_2, NOMER_3, NOMER_4,
     ADMIN_PLATFORMS, SUPERVISOR, PLATFORM_ADMINS
 )
-from ..core.order_analyzer import OrderAnalyzer
-from ..core.message_generator import MessageGenerator
+from ..config.core.order_analyzer import OrderAnalyzer
+from ..config.core.message_generator import MessageGenerator
 from ..services.database_service import DatabaseService
 import logging
 

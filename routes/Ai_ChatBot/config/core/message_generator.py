@@ -1,6 +1,7 @@
 from datetime import datetime
 import logging
 from ..services.database_service import DatabaseService
+from ...services.database_service import DatabaseService
 from .order_analyzer import OrderAnalyzer
 from ..config.wa_config import NOMER_1, NOMER_2, NOMER_3, NOMER_4
 from ..config.wa_config import ADMIN_PLATFORMS, SUPERVISOR, PLATFORM_ADMINS
