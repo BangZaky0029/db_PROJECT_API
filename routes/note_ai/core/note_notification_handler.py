@@ -306,8 +306,8 @@ class NoteNotificationHandler:
                     'wa_config': 'loaded',
                     'ai_config': 'loaded'
                 },
-                'supported_mentions': list(self.wa_config.USER_PHONE_MAPPING.keys()),
-                'total_users': len(self.wa_config.USER_PHONE_MAPPING),
+                'supported_mentions': list(self.wa_config.user_phone_mapping.keys()),
+            'total_users': len(self.wa_config.user_phone_mapping),
                 'timestamp': datetime.now().isoformat()
             }
             

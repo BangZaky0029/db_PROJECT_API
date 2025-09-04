@@ -150,7 +150,7 @@ def test_mention_parsing():
         valid_mentions = [m for m in mentions if notification_handler.mention_parser.is_valid_mention(m)]
         
         # Get supported users
-        supported_users = list(notification_handler.wa_config.USER_PHONE_MAPPING.keys())
+        supported_users = list(notification_handler.wa_config.user_phone_mapping.keys())
         
         result = {
             'input_text': text,

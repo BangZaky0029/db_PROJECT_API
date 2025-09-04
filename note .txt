@@ -1,7 +1,9 @@
 Ganti d server : 
-- Dir : project_api
-- Ip  : 100.117.80.112
+- Dir   : project_api
+- Ip    : 100.117.80.112
+- akses : http://100.117.80.112:5500/db_WEB-SERVER/mainWEB.html
 
 Ganti d testing : python -m db_PROJECT_API.app
-- Dir : db_PROJECT_API
-- Ip  : 100.124.58.32
+- Dir   : db_PROJECT_API
+- Ip    : 100.124.58.32
+- akses : http://100.124.58.32:5500/db_WEB-SERVER/mainWEB.html

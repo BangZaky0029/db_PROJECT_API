@@ -1,8 +1,8 @@
 from datetime import datetime
 import logging
 from ...services.database_service import DatabaseService
-from project_api.routes.Ai_ChatBot.config.core.order_analyzer import OrderAnalyzer
-from project_api.routes.Ai_ChatBot.config.wa_config import NOMER_1, NOMER_2, NOMER_3
+from ...config.core.order_analyzer import OrderAnalyzer
+from ...config.wa_config import NOMER_1, NOMER_2, NOMER_3
 
 logger = logging.getLogger(__name__)
 

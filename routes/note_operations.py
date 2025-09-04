@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 try:
     import sys
     import os
-    # Add note_ai path to sys.path
-    note_ai_path = os.path.join(os.path.dirname(__file__), 'note_ai')
-    if note_ai_path not in sys.path:
-        sys.path.insert(0, note_ai_path)
+    # Add parent directory to sys.path to find note_ai module
+    parent_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if parent_path not in sys.path:
+        sys.path.insert(0, parent_path)
     
-    from note_ai.core.note_notification_handler import notification_handler
+    from routes.note_ai.core.note_notification_handler import notification_handler
     NOTIFICATION_ENABLED = True
     logger.info("WhatsApp notification system loaded successfully")
 except ImportError as e:

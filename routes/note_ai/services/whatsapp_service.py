@@ -173,9 +173,9 @@ class WhatsAppNotificationService:
             
             # Format pesan
             message = f"🔔 *NOTIFIKASI NOTE* \n"
+            message += f"👤 From: {note_data.get('created_by', 'N/A')}\n"
             message += f"Halo {mentioned_user.replace('@', '').title()},\n"
             message += f"Anda di-mention dalam note baru:\n"
-            message += f"👤 From: {note_data.get('created_by', 'N/A')}\n"
             message += f"📝 Judul: {note_data.get('note_title', 'N/A')}\n"
             message += f"🆔 ID Input: {note_data.get('id_input', 'N/A')}\n"
             message += f"📊 Sumber: {note_data.get('table_source', 'N/A')}\n\n"
