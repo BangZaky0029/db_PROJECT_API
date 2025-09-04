@@ -3,7 +3,7 @@ import schedule
 import time
 import logging
 from ..config.wa_config import NOMER_1, NOMER_2, NOMER_3, NOMER_4, SUPERVISOR
-from ..core.message_generator import MessageGenerator
+from ..config.core.message_generator import MessageGenerator
 from ..messages.message_service import send_whatsapp_message
 
 logger = logging.getLogger(__name__)

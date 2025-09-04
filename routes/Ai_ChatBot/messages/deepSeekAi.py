@@ -1,7 +1,7 @@
 import requests
 import json
 from ..config.ai_config import API_KEY, API_URL, MODEL_API
-from ..core.message_generator import MessageGenerator
+from ..config.core.message_generator import MessageGenerator
 
 
 def get_ai_response(prompt):
