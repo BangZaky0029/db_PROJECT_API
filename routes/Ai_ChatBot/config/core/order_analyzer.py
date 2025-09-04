@@ -1,5 +1,5 @@
 from datetime import datetime
-from ..services.database_service import DatabaseService
+from ...services.database_service import DatabaseService
 from ..utils.date_utils import DateUtils
 
 class OrderAnalyzer:
