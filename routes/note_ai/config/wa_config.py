@@ -14,7 +14,7 @@ NOMER_VINKA = "6285780307116"  # Vinka's WhatsApp number
 NOMER_DESI = "6285215533928"  # Desi's WhatsApp number (formerly Mas David)
 NOMER_DAVID = "6281288474727"  # David's WhatsApp number (formerly Mba Desi)
 NOMER_IKBAL = "6285892622773"  # Ikbal's WhatsApp number
-NOMER_UNTUNG = "6285765213817"  # Untung's WhatsApp number
+NOMER_UNTUNG = "6281288999768"  # Untung's WhatsApp number
 NOMER_IMAM = "6281809742506"  # Imam's WhatsApp number
 
 # User-Phone Mapping for @mentions
