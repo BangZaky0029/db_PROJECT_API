@@ -16,7 +16,7 @@ CORS(app, resources={
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
     }
-})
+}, supports_credentials=True)
 
 @app.route('/')
 def home():
@@ -40,7 +40,8 @@ if __name__ == '__main__':
             host='0.0.0.0',  # Changed to allow all IP access
             port=5000,
             debug=False,
-            threaded=True
+            threaded=True,
+            use_reloader=False  # Disable auto-reloader to prevent refresh
         )
     except Exception as e:
         logger.error(f"Failed to start server: {e}")

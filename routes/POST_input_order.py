@@ -1,5 +1,5 @@
 import os
-from flask import Flask, Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_from_directory, current_app
 from flask_cors import CORS
 from mysql.connector import Error, InterfaceError
 import sys
@@ -14,12 +14,9 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": ["http://127.0.0.1:5501", "http://localhost:5501"]}})
-
 # Blueprint untuk input order
 post_input_order_bp = Blueprint("input_order", __name__)
-CORS(post_input_order_bp)
+CORS(post_input_order_bp, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 # Configure file upload settings
 UPLOAD_FOLDER = r"C:\KODINGAN\db_manukashop\images"
@@ -31,8 +28,7 @@ IMAGE_BASE_URL = "http://100.117.80.112:5000/images"
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-# Add upload folder configuration to app
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# Upload folder configuration will be added to app in the route handler
 
 # Helper function to check allowed file extensions
 def allowed_file(filename):
@@ -51,7 +47,7 @@ def _handle_cors_preflight():
 @post_input_order_bp.route('/images/<filename>')
 def serve_image(filename):
     try:
-       return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+       return send_from_directory(UPLOAD_FOLDER, filename)
     except FileNotFoundError:
         return "File not found", 404
 
@@ -102,7 +98,7 @@ def input_order():
                 # Generate unique filename with timestamp to avoid conflicts
                 timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
                 filename = secure_filename(f"{timestamp}_{file.filename}")
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                filepath = os.path.join(UPLOAD_FOLDER, filename)
                 
                 # Save file
                 file.save(filepath)
@@ -253,7 +249,7 @@ def input_order():
         conn.commit()
         logger.info(f"Successfully committed transaction for order {id_pesanan}")
 
-        return jsonify({
+        response = jsonify({
             "status": "success",
             "message": "Data Berhasil Terinput dengan ID : {}".format(id_input),
             "data": {
@@ -269,23 +265,50 @@ def input_order():
                 "id_produk": id_produk,
                 "TimeTemp": current_timestamp
             }
-        }), 201
+        })
+        
+        # Set CORS headers to prevent refresh issues
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        response.headers.add("Access-Control-Allow-Credentials", "true")
+        response.headers.add("Cache-Control", "no-cache, no-store, must-revalidate")
+        
+        return response, 201
 
     except (ValueError, InterfaceError) as e:
         logger.error(f"Value or Interface Error: {str(e)}")
         if conn:
             conn.rollback()
-        return jsonify({"status": "error", "message": f"Kesalahan: {str(e)}"}), 500
+        response = jsonify({"status": "error", "message": f"Kesalahan: {str(e)}"})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        response.headers.add("Access-Control-Allow-Credentials", "true")
+        response.headers.add("Cache-Control", "no-cache, no-store, must-revalidate")
+        return response, 500
     except Error as e:
         logger.error(f"MySQL Error: {str(e)}")
         if conn:
             conn.rollback()
-        return jsonify({"status": "error", "message": f"Kesalahan database: {str(e)}"}), 500
+        response = jsonify({"status": "error", "message": f"Kesalahan database: {str(e)}"})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        response.headers.add("Access-Control-Allow-Credentials", "true")
+        response.headers.add("Cache-Control", "no-cache, no-store, must-revalidate")
+        return response, 500
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}", exc_info=True)
         if conn:
             conn.rollback()
-        return jsonify({"status": "error", "message": f"Kesalahan sistem: {str(e)}"}), 500
+        response = jsonify({"status": "error", "message": f"Kesalahan sistem: {str(e)}"})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        response.headers.add("Access-Control-Allow-Credentials", "true")
+        response.headers.add("Cache-Control", "no-cache, no-store, must-revalidate")
+        return response, 500
     finally:
         if cursor:
             cursor.close()
@@ -299,9 +322,6 @@ from flask import send_from_directory
 
 
 
-# Register blueprint
-app.register_blueprint(post_input_order_bp)
-
 # Fungsi untuk menangani request OPTIONS (CORS Preflight)
 def _handle_cors_preflight():
     response = jsonify({"status": "success", "message": "Preflight OK"})
@@ -310,9 +330,6 @@ def _handle_cors_preflight():
     response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
     response.headers.add("Access-Control-Allow-Credentials", "true")
     return response, 200
-
-if __name__ == "__main__":
-    app.run(debug=True)
 
 
 
