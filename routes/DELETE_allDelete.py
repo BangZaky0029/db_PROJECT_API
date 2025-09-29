@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 def delete_order(id_input):
     conn = None
     cursor = None
-    try:
+    try: 
         conn = get_db_connection()
         cursor = conn.cursor()
 

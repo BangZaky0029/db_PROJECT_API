@@ -179,7 +179,7 @@ def input_order():
                 id_qc, timestamp_qc, status_print, OUT_DLN, status_produksi, id_produk, id_type) 
                 VALUES (%s, %s, %s, %s, %s, %s, 
                         %s, %s, %s, %s, 
-                        %s, %s, '-', '-', %s, %s)
+                        %s, %s, '-', '-', '-', %s, %s)
                 """,
                 (id_pesanan, id_input, platform, id_admin, qty, deadline, 
                 id_designer, current_timestamp if id_designer else None,
@@ -199,7 +199,7 @@ def input_order():
                 """
                 INSERT INTO table_prod 
                 (id_input, id_pesanan, platform, qty, deadline, status_print, OUT_DLN, status_produksi, id_produk, id_type)
-                VALUES (%s, %s, %s, %s, %s, '-', '-', %s, %s)
+                VALUES (%s, %s, %s, %s, %s, '-', '-', '-', %s, %s)
                 """,
                 (id_input, id_pesanan, platform, qty, deadline, id_produk, id_type)
             )
@@ -215,7 +215,7 @@ def input_order():
                 """
                 INSERT INTO table_design 
                 (id_input, id_pesanan, id_designer, platform, qty, layout_link, deadline, status_print, OUT_DLN, timestamp, id_produk, id_type)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, '-', NOW(), %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, '-', '-', NOW(), %s, %s)
                 """,
                 (id_input, id_pesanan, id_designer, platform, qty, None, deadline, id_produk, id_type)
             )
