@@ -22,7 +22,7 @@ CORS(post_input_order_bp, resources={r"/api/*": {"origins": "*"}}, supports_cred
 UPLOAD_FOLDER = r"C:\KODINGAN\db_manukashop\images"
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 # Base URL for accessing the images - configure this to match your server setup
-IMAGE_BASE_URL = "http://100.124.58.32:5000/images"
+IMAGE_BASE_URL = "http://100.117.80.112:5000/images"
 
 # Create upload folder if it doesn't exist
 if not os.path.exists(UPLOAD_FOLDER):
