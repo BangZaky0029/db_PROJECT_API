@@ -14,13 +14,13 @@ if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
 # Import konfigurasi
-from config.wa_config import WhatsAppConfig
-from config.ai_config import AIConfig
+from routes.note_ai.config.wa_config import WhatsAppConfig
+from routes.note_ai.config.ai_config import AIConfig
 
 # Import services dan utils
-from services.whatsapp_service import WhatsAppNotificationService
-from utils.mention_parser import MentionParser
-from utils.message_formatter import MessageFormatter
+from routes.note_ai.services.whatsapp_service import WhatsAppNotificationService
+from routes.note_ai.utils.mention_parser import MentionParser
+from routes.note_ai.utils.message_formatter import MessageFormatter
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
