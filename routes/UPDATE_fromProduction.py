@@ -115,10 +115,11 @@ def sync_prod_to_pesanan():
             table_fields = {
                 'table_prod': get_db_columns('table_prod'),
                 'table_pesanan': get_db_columns('table_pesanan'),
+                'table_design': get_db_columns('table_design'),
                 'table_urgent': get_db_columns('table_urgent')
             }
 
-            for field in ['id_penjahit', 'id_qc', 'status_produksi']:
+            for field in ['id_penjahit', 'id_qc', 'status_produksi', 'OUT_DLN']:
                 if data.get(field) is not None:
                     update_fields.append(f"{field} = %s")
                     update_values.append(data[field])

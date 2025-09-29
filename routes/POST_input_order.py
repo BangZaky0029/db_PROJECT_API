@@ -22,7 +22,7 @@ CORS(post_input_order_bp, resources={r"/api/*": {"origins": "*"}}, supports_cred
 UPLOAD_FOLDER = r"C:\KODINGAN\db_manukashop\images"
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 # Base URL for accessing the images - configure this to match your server setup
-IMAGE_BASE_URL = "http://100.117.80.112:5000/images"
+IMAGE_BASE_URL = "http://100.124.58.32:5000/images"
 
 # Create upload folder if it doesn't exist
 if not os.path.exists(UPLOAD_FOLDER):
@@ -176,7 +176,7 @@ def input_order():
                 INSERT INTO table_pesanan 
                 (id_pesanan, id_input, platform, id_admin, qty, deadline, 
                 id_desainer, timestamp_designer, id_penjahit, timestamp_penjahit, 
-                id_qc, timestamp_qc, status_print, status_produksi, id_produk, id_type) 
+                id_qc, timestamp_qc, status_print, OUT_DLN, status_produksi, id_produk, id_type) 
                 VALUES (%s, %s, %s, %s, %s, %s, 
                         %s, %s, %s, %s, 
                         %s, %s, '-', '-', %s, %s)
@@ -198,7 +198,7 @@ def input_order():
             cursor.execute(
                 """
                 INSERT INTO table_prod 
-                (id_input, id_pesanan, platform, qty, deadline, status_print, status_produksi, id_produk, id_type)
+                (id_input, id_pesanan, platform, qty, deadline, status_print, OUT_DLN, status_produksi, id_produk, id_type)
                 VALUES (%s, %s, %s, %s, %s, '-', '-', %s, %s)
                 """,
                 (id_input, id_pesanan, platform, qty, deadline, id_produk, id_type)
@@ -214,7 +214,7 @@ def input_order():
             cursor.execute(
                 """
                 INSERT INTO table_design 
-                (id_input, id_pesanan, id_designer, platform, qty, layout_link, deadline, status_print, timestamp, id_produk, id_type)
+                (id_input, id_pesanan, id_designer, platform, qty, layout_link, deadline, status_print, OUT_DLN, timestamp, id_produk, id_type)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, '-', NOW(), %s, %s)
                 """,
                 (id_input, id_pesanan, id_designer, platform, qty, None, deadline, id_produk, id_type)
