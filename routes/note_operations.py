@@ -17,7 +17,7 @@ try:
     if parent_path not in sys.path:
         sys.path.insert(0, parent_path)
     
-    from routes.note_ai.core.note_notification_handler import notification_handler
+    from routes.note_ai.utils.core.note_notification_handler import notification_handler
     NOTIFICATION_ENABLED = True
     logger.info("WhatsApp notification system loaded successfully")
 except ImportError as e:
