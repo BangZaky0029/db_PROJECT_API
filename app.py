@@ -1,6 +1,9 @@
 from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 from routes import api_bp
+from routes.design_json import design_json_bp
+from routes.design_import import design_import_bp
+from routes.design_header_bp import design_header_bp
 import logging
 import os
 
@@ -31,6 +34,9 @@ def serve_static(path):
     return send_from_directory(app.static_folder, path)
 
 app.register_blueprint(api_bp)
+app.register_blueprint(design_json_bp)
+app.register_blueprint(design_import_bp)
+app.register_blueprint(design_header_bp, url_prefix='/api/header')
 
 if __name__ == '__main__':
     try:
